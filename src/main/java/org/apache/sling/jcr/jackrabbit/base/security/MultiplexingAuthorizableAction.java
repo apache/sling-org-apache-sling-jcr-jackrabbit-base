@@ -21,6 +21,7 @@ package org.apache.sling.jcr.jackrabbit.base.security;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Hashtable;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentSkipListMap;
@@ -59,9 +60,9 @@ public class MultiplexingAuthorizableAction extends AbstractAuthorizableAction i
         this.tracker = new ServiceTracker(context, createFilter(context),this);
         this.tracker.open();
 
-        Properties p = new Properties();
-        p.setProperty("jackrabbit.extension","true");
-        reg = context.registerService(AuthorizableAction.class.getName(),this,p);
+        Hashtable<String, String> properties = new Hashtable<>();
+        properties.put("jackrabbit.extension","true");
+        reg = context.registerService(AuthorizableAction.class.getName(),this, properties);
     }
 
     //~----------------------------------------<AuthorizableAction>

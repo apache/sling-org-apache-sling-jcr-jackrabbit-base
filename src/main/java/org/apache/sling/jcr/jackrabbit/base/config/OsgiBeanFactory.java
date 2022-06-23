@@ -25,6 +25,7 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -156,7 +157,7 @@ public class OsgiBeanFactory implements BeanFactory, ServiceTrackerCustomizer {
         //TODO Review the thread safety aspect
         ServiceRegistration reg = beanFactoryReg;
         if (reg == null) {
-            beanFactoryReg = bundleContext.registerService(BeanFactory.class.getName(), this, new Properties());
+            beanFactoryReg = bundleContext.registerService(BeanFactory.class.getName(), this, new Hashtable<>());
             log.info("All dependencies are satisfied. Registering the BeanFactory instance");
         }
     }

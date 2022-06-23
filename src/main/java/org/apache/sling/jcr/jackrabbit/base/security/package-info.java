@@ -23,8 +23,6 @@
  * @version 1.0
  */
 @Version("1.0")
-@Export(optional = "provide:=true")
 package org.apache.sling.jcr.jackrabbit.base.security;
 
-import aQute.bnd.annotation.Export;
-import aQute.bnd.annotation.Version;
+import org.osgi.annotation.versioning.Version;
