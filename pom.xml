@@ -42,7 +42,6 @@
     </scm>
 
     <properties>
-        <project.build.outputTimestamp>1</project.build.outputTimestamp>
         <bnd.baseline.fail.on.missing>false</bnd.baseline.fail.on.missing>
     </properties>
 
