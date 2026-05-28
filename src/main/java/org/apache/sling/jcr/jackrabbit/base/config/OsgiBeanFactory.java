@@ -16,7 +16,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.apache.sling.jcr.jackrabbit.base.config;
 
 import java.io.IOException;
@@ -50,7 +49,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.InputSource;
 
-
 public class OsgiBeanFactory implements BeanFactory, ServiceTrackerCustomizer {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
@@ -58,25 +56,21 @@ public class OsgiBeanFactory implements BeanFactory, ServiceTrackerCustomizer {
     private final BeanFactory delegate = new SimpleBeanFactory();
     private final BundleContext bundleContext;
 
-    /**
-     * Tracker to track all services which are possible Jackrabbit extensions
-     */
+    /** Tracker to track all services which are possible Jackrabbit extensions */
     private final ServiceTracker tracker;
 
     /**
-     * Set of all interface class instances for which actual instances need to
-     * be lookedup from OSGi Service Registry
+     * Set of all interface class instances for which actual instances need to be lookedup from OSGi
+     * Service Registry
      */
     private final Set<Class> dependencies = new HashSet<Class>();
 
-    /**
-     * Map of className to class instances
-     */
+    /** Map of className to class instances */
     private final Map<String, Class> classNameMapping = new HashMap<String, Class>();
 
     /**
-     * Map of the interface name -> instance where the instance provides an implementation
-     * of the given interface
+     * Map of the interface name -> instance where the instance provides an implementation of the
+     * given interface
      */
     private final Map<Class, Object> instanceMap = new ConcurrentHashMap<Class, Object>();
 
@@ -88,7 +82,7 @@ public class OsgiBeanFactory implements BeanFactory, ServiceTrackerCustomizer {
         try {
             filter = bundleContext.createFilter("(jackrabbit.extension=true)");
         } catch (InvalidSyntaxException e) {
-            //Should not happen
+            // Should not happen
             throw new RuntimeException("Invalid filter", e);
         }
         this.tracker = new ServiceTracker(bundleContext, filter, this);
@@ -112,7 +106,7 @@ public class OsgiBeanFactory implements BeanFactory, ServiceTrackerCustomizer {
         classNameMapping.clear();
     }
 
-    //-----------------------------------------------< BeanFactory >
+    // -----------------------------------------------< BeanFactory >
 
     public Object newInstance(Class<?> clazz, BeanConfig config) throws ConfigurationException {
         Class targetClass = getClassFromConfig(config);
@@ -126,7 +120,7 @@ public class OsgiBeanFactory implements BeanFactory, ServiceTrackerCustomizer {
         return delegate.newInstance(clazz, config);
     }
 
-    //-----------------------------------------------< ServiceTrackerCustomizer >
+    // -----------------------------------------------< ServiceTrackerCustomizer >
 
     public Object addingService(ServiceReference reference) {
         Object instance = bundleContext.getService(reference);
@@ -136,9 +130,7 @@ public class OsgiBeanFactory implements BeanFactory, ServiceTrackerCustomizer {
         return depsProvided;
     }
 
-    public void modifiedService(ServiceReference serviceReference, Object o) {
-
-    }
+    public void modifiedService(ServiceReference serviceReference, Object o) {}
 
     public void removedService(ServiceReference reference, Object o) {
         deregisterInstance((Class[]) o);
@@ -146,15 +138,15 @@ public class OsgiBeanFactory implements BeanFactory, ServiceTrackerCustomizer {
         bundleContext.ungetService(reference);
     }
 
-    //------------------------- Callback methods
+    // ------------------------- Callback methods
 
     /**
-     * Callback method invoked when all services required by Jackrabbit are available. Implementing class
-     * can use this to manage repository lifecycle. Default implementation registers the BeanFactory
-     * instance which would be used by the Repository creator to create the repository
+     * Callback method invoked when all services required by Jackrabbit are available. Implementing
+     * class can use this to manage repository lifecycle. Default implementation registers the
+     * BeanFactory instance which would be used by the Repository creator to create the repository
      */
     protected void dependenciesSatisfied() {
-        //TODO Review the thread safety aspect
+        // TODO Review the thread safety aspect
         ServiceRegistration reg = beanFactoryReg;
         if (reg == null) {
             beanFactoryReg = bundleContext.registerService(BeanFactory.class.getName(), this, new Hashtable<>());
@@ -163,10 +155,10 @@ public class OsgiBeanFactory implements BeanFactory, ServiceTrackerCustomizer {
     }
 
     /**
-     * Callback method invoked when any of the service required by Jackrabbit goes away. Implementing class
-     * can use this to manage repository lifecycle. Default implementation de-registers the BeanFactory
-     * instance. And repository creator service which then depends on BeanFactory reference would then be notified and
-     * can react accordingly
+     * Callback method invoked when any of the service required by Jackrabbit goes away. Implementing
+     * class can use this to manage repository lifecycle. Default implementation de-registers the
+     * BeanFactory instance. And repository creator service which then depends on BeanFactory
+     * reference would then be notified and can react accordingly
      */
     protected void dependenciesUnSatisfied() {
         ServiceRegistration reg = beanFactoryReg;
@@ -208,22 +200,31 @@ public class OsgiBeanFactory implements BeanFactory, ServiceTrackerCustomizer {
             // close source
             final InputStream is = source.getByteStream();
             if (is != null) {
-                try { is.close(); } catch (final IOException ignore) {}
+                try {
+                    is.close();
+                } catch (final IOException ignore) {
+                }
             } else {
                 final Reader r = source.getCharacterStream();
-                if ( r != null ) {
-                    try { r.close(); } catch (final IOException ignore) {}
+                if (r != null) {
+                    try {
+                        r.close();
+                    } catch (final IOException ignore) {
+                    }
                 }
             }
         }
 
         if (dependencies.isEmpty()) {
-            log.info("No dependencies configured. Repository would be created without any OSGi dependency getting injected");
+            log.info("No dependencies configured. Repository would be created without any OSGi dependency"
+                    + " getting injected");
             return;
         }
 
-        log.info("Following dependencies have been determined for the repository {}. Repository would be started " +
-                "once all these dependencies have been satisfied", dependencies);
+        log.info(
+                "Following dependencies have been determined for the repository {}. Repository would be"
+                        + " started once all these dependencies have been satisfied",
+                dependencies);
     }
 
     private void registerInstance(Class[] depsProvided, Object o) {
@@ -238,13 +239,11 @@ public class OsgiBeanFactory implements BeanFactory, ServiceTrackerCustomizer {
         }
     }
 
-    /**
-     * Determines all the dependencies which this ServiceReference can satisfy
-     */
+    /** Determines all the dependencies which this ServiceReference can satisfy */
     private Class[] determineProvidedDependencies(ServiceReference ref) {
-        //Use OBJECTCLASS property from SR as that determines under what classes
-        //a given service instance is published
-        //Class[] interfaces = o.getClass().getInterfaces();
+        // Use OBJECTCLASS property from SR as that determines under what classes
+        // a given service instance is published
+        // Class[] interfaces = o.getClass().getInterfaces();
         String[] interfaces = (String[]) ref.getProperty(Constants.OBJECTCLASS);
         List<Class> depsProvided = new ArrayList<Class>(interfaces.length);
         for (String intf : interfaces) {

@@ -16,18 +16,16 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.apache.sling.jcr.jackrabbit.base.security;
+
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Map;
-import java.util.Properties;
 import java.util.concurrent.ConcurrentSkipListMap;
-
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
 
 import org.apache.jackrabbit.api.security.user.Authorizable;
 import org.apache.jackrabbit.api.security.user.Group;
@@ -44,79 +42,77 @@ import org.osgi.util.tracker.ServiceTrackerCustomizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
-
-public class MultiplexingAuthorizableAction extends AbstractAuthorizableAction implements ServiceTrackerCustomizer{
+public class MultiplexingAuthorizableAction extends AbstractAuthorizableAction implements ServiceTrackerCustomizer {
     private Logger log = LoggerFactory.getLogger(getClass());
 
-    private Map<Comparable,AuthorizableAction> actionMap =
+    private Map<Comparable, AuthorizableAction> actionMap =
             new ConcurrentSkipListMap<Comparable, AuthorizableAction>(Collections.reverseOrder());
     private final ServiceTracker tracker;
     private final BundleContext context;
     private final ServiceRegistration reg;
 
-    public MultiplexingAuthorizableAction(BundleContext context){
+    public MultiplexingAuthorizableAction(BundleContext context) {
         this.context = context;
-        this.tracker = new ServiceTracker(context, createFilter(context),this);
+        this.tracker = new ServiceTracker(context, createFilter(context), this);
         this.tracker.open();
 
         Hashtable<String, String> properties = new Hashtable<>();
-        properties.put("jackrabbit.extension","true");
-        reg = context.registerService(AuthorizableAction.class.getName(),this, properties);
+        properties.put("jackrabbit.extension", "true");
+        reg = context.registerService(AuthorizableAction.class.getName(), this, properties);
     }
 
-    //~----------------------------------------<AuthorizableAction>
+    // ~----------------------------------------<AuthorizableAction>
 
     public void onCreate(User user, String password, Session session) throws RepositoryException {
         log.debug("Created user {}", user.getID());
-        for(AuthorizableAction a : getActions()){
-            a.onCreate(user,password,session);
+        for (AuthorizableAction a : getActions()) {
+            a.onCreate(user, password, session);
         }
     }
 
     @Override
     public void onCreate(Group group, Session session) throws RepositoryException {
         log.debug("Created group {}", group.getID());
-        for(AuthorizableAction a : getActions()){
-            a.onCreate(group,session);
+        for (AuthorizableAction a : getActions()) {
+            a.onCreate(group, session);
         }
     }
 
     @Override
     public void onRemove(Authorizable authorizable, Session session) throws RepositoryException {
         log.debug("Removed authorizable {}", authorizable.getID());
-        for(AuthorizableAction a : getActions()){
-            a.onRemove(authorizable,session);
+        for (AuthorizableAction a : getActions()) {
+            a.onRemove(authorizable, session);
         }
     }
 
     @Override
     public void onPasswordChange(User user, String newPassword, Session session) throws RepositoryException {
         log.debug("Password changed for user {}", user.getID());
-        for(AuthorizableAction a : getActions()){
-            a.onPasswordChange(user,newPassword,session);
+        for (AuthorizableAction a : getActions()) {
+            a.onPasswordChange(user, newPassword, session);
         }
     }
 
-    //~----------------------------------------<LifeCycle methods>
+    // ~----------------------------------------<LifeCycle methods>
 
-    public void open(){
+    public void open() {
         tracker.open();
     }
 
-    public void close(){
-        if(reg != null){
+    public void close() {
+        if (reg != null) {
             reg.unregister();
         }
         tracker.close();
         actionMap.clear();
     }
 
-    //~----------------------------------------- < ServiceTrackerCustomizer >
+    // ~----------------------------------------- < ServiceTrackerCustomizer >
 
     public Object addingService(ServiceReference reference) {
         AuthorizableAction action = (AuthorizableAction) context.getService(reference);
-        actionMap.put(reference,action);
+        actionMap.put(reference, action);
         return action;
     }
 
@@ -134,11 +130,11 @@ public class MultiplexingAuthorizableAction extends AbstractAuthorizableAction i
 
     private Filter createFilter(BundleContext context) {
         try {
-            //Create a filter such that we track all service excluding ourselves
-            return context.createFilter("(&(!(jackrabbit.extension=true))" +
-                    "(objectClass=org.apache.jackrabbit.core.security.user.action.AuthorizableAction))");
+            // Create a filter such that we track all service excluding ourselves
+            return context.createFilter("(&(!(jackrabbit.extension=true))"
+                    + "(objectClass=org.apache.jackrabbit.core.security.user.action.AuthorizableAction))");
         } catch (InvalidSyntaxException e) {
-            //Should not happen as Filter is hardcoded and should work
+            // Should not happen as Filter is hardcoded and should work
             throw new RuntimeException(e);
         }
     }

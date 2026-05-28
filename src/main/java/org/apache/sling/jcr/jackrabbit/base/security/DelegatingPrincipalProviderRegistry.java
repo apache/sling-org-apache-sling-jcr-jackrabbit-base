@@ -16,12 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.apache.sling.jcr.jackrabbit.base.security;
 
-import java.util.Properties;
-
 import javax.jcr.RepositoryException;
+
+import java.util.Properties;
 
 import org.apache.jackrabbit.core.security.principal.PrincipalProvider;
 import org.apache.jackrabbit.core.security.principal.PrincipalProviderRegistry;
@@ -30,8 +29,8 @@ public class DelegatingPrincipalProviderRegistry implements PrincipalProviderReg
     private final PrincipalProviderRegistry defaultRegistry;
     private final PrincipalProviderRegistry osgiRegistry;
 
-    public DelegatingPrincipalProviderRegistry(PrincipalProviderRegistry defaultRegistry,
-                                                PrincipalProviderRegistry osgiRegistry) {
+    public DelegatingPrincipalProviderRegistry(
+            PrincipalProviderRegistry defaultRegistry, PrincipalProviderRegistry osgiRegistry) {
         this.defaultRegistry = defaultRegistry;
         this.osgiRegistry = osgiRegistry;
     }
@@ -56,8 +55,8 @@ public class DelegatingPrincipalProviderRegistry implements PrincipalProviderReg
         PrincipalProvider[] defaultProviders = defaultRegistry.getProviders();
         PrincipalProvider[] extraProviders = osgiRegistry.getProviders();
 
-        //Quick check
-        if(extraProviders.length == 0){
+        // Quick check
+        if (extraProviders.length == 0) {
             return defaultProviders;
         }
 
@@ -66,5 +65,4 @@ public class DelegatingPrincipalProviderRegistry implements PrincipalProviderReg
         System.arraycopy(extraProviders, 0, mergedResult, defaultProviders.length, extraProviders.length);
         return mergedResult;
     }
-
 }

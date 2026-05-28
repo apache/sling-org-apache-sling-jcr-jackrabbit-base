@@ -16,15 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.apache.sling.jcr.jackrabbit.base.security;
-
-
-import org.apache.jackrabbit.core.config.BeanConfig;
-import org.apache.jackrabbit.core.config.ConfigurationException;
-import org.apache.jackrabbit.core.config.LoginModuleConfig;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.security.auth.Subject;
 import javax.security.auth.callback.CallbackHandler;
@@ -32,10 +24,17 @@ import javax.security.auth.login.Configuration;
 import javax.security.auth.login.LoginContext;
 import javax.security.auth.login.LoginException;
 import javax.security.auth.spi.LoginModule;
+
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.util.Map;
 import java.util.Properties;
+
+import org.apache.jackrabbit.core.config.BeanConfig;
+import org.apache.jackrabbit.core.config.ConfigurationException;
+import org.apache.jackrabbit.core.config.LoginModuleConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DelegatingLoginModule implements LoginModule {
     private static Logger logger = LoggerFactory.getLogger(DelegatingLoginModule.class);
@@ -50,43 +49,50 @@ public class DelegatingLoginModule implements LoginModule {
 
     private LoginException loginException;
 
-
-    public void initialize(Subject subject, CallbackHandler callbackHandler, Map<String, ?> sharedState,
-                           Map<String, ?> options) {
+    public void initialize(
+            Subject subject, CallbackHandler callbackHandler, Map<String, ?> sharedState, Map<String, ?> options) {
         Configuration config = null;
-        try{
+        try {
             config = Configuration.getInstance(JAAS_CONFIG_ALGO_NAME, null, providerName);
-        }catch (NoSuchProviderException e){
-            logger.debug("No provider "+providerName+"found so far",e);
+        } catch (NoSuchProviderException e) {
+            logger.debug("No provider " + providerName + "found so far", e);
         } catch (NoSuchAlgorithmException e) {
-            logger.debug("No provider "+providerName+"found so far for fetching JAAS " +
-                    "config with algorithm name "+JAAS_CONFIG_ALGO_NAME,e);
+            logger.debug(
+                    "No provider "
+                            + providerName
+                            + "found so far for fetching JAAS "
+                            + "config with algorithm name "
+                            + JAAS_CONFIG_ALGO_NAME,
+                    e);
         }
 
-        if(config != null){
+        if (config != null) {
             final Thread current = Thread.currentThread();
             final ClassLoader orig = current.getContextClassLoader();
             try {
                 current.setContextClassLoader(DelegatingLoginModule.class.getClassLoader());
-                loginContext = new LoginContext(appName, subject,callbackHandler, config);
+                loginContext = new LoginContext(appName, subject, callbackHandler, config);
             } catch (LoginException e) {
                 loginException = e;
-            } finally{
+            } finally {
                 current.setContextClassLoader(orig);
             }
-        }else{
-            //No support so far from OSGi so would use default logic used by Jackrabbit
-            //to construct the LoginModule
+        } else {
+            // No support so far from OSGi so would use default logic used by Jackrabbit
+            // to construct the LoginModule
             Properties p = new Properties();
             p.putAll(options);
-            BeanConfig bc = new BeanConfig(delegateLoginModuleClass,p);
+            BeanConfig bc = new BeanConfig(delegateLoginModuleClass, p);
             LoginModuleConfig lmc = new LoginModuleConfig(bc);
             try {
                 delegate = lmc.getLoginModule();
-                delegate.initialize(subject,callbackHandler,sharedState,options);
-                logger.info("No JAAS Configuration provider found would be directly invoking LoginModule {}",delegateLoginModuleClass);
+                delegate.initialize(subject, callbackHandler, sharedState, options);
+                logger.info(
+                        "No JAAS Configuration provider found would be directly invoking LoginModule {}",
+                        delegateLoginModuleClass);
             } catch (ConfigurationException e) {
-                //Behaviour is same as org.apache.jackrabbit.core.security.authentication.LocalAuthContext.login()
+                // Behaviour is same as
+                // org.apache.jackrabbit.core.security.authentication.LocalAuthContext.login()
                 loginException = new LoginException(e.getMessage());
             }
         }
@@ -136,7 +142,7 @@ public class DelegatingLoginModule implements LoginModule {
     }
 
     private void assertState() throws LoginException {
-        if(loginException != null){
+        if (loginException != null) {
             throw loginException;
         }
     }
@@ -152,5 +158,4 @@ public class DelegatingLoginModule implements LoginModule {
     public void setProviderName(String providerName) {
         this.providerName = providerName;
     }
-
 }

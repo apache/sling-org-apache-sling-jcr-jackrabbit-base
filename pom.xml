@@ -23,17 +23,15 @@
     <parent>
         <groupId>org.apache.sling</groupId>
         <artifactId>sling-bundle-parent</artifactId>
-        <version>48</version>
-        <relativePath/>
+        <version>66</version>
+        <relativePath />
     </parent>
 
     <artifactId>org.apache.sling.jcr.jackrabbit.base</artifactId>
     <version>0.0.1-SNAPSHOT</version>
 
     <name>Apache Sling JCR Jackrabbit Base</name>
-    <description>
-		The JCR base bundle provides Jackrabbit utility classes
-    </description>
+    <description>The JCR base bundle provides Jackrabbit utility classes</description>
 
     <scm>
         <connection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-jcr-jackrabbit-base.git</connection>
@@ -43,16 +41,8 @@
 
     <properties>
         <bnd.baseline.fail.on.missing>false</bnd.baseline.fail.on.missing>
+        <sling.java.version>8</sling.java.version>
     </properties>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>animal-sniffer-maven-plugin</artifactId>
-            </plugin>
-        </plugins>
-    </build>
 
     <dependencies>
         <dependency>
@@ -69,7 +59,12 @@
         <!-- OSGi Libraries -->
         <dependency>
             <groupId>org.osgi</groupId>
-            <artifactId>osgi.core</artifactId>
+            <artifactId>org.osgi.framework</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.util.tracker</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -81,6 +76,7 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -93,4 +89,14 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>animal-sniffer-maven-plugin</artifactId>
+                <version>1.24</version>
+            </plugin>
+        </plugins>
+    </build>
 </project>
