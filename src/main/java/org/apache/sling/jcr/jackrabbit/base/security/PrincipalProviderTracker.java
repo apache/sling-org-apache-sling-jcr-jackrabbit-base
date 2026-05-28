@@ -16,14 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.apache.sling.jcr.jackrabbit.base.security;
+
+import javax.jcr.RepositoryException;
 
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
-
-import javax.jcr.RepositoryException;
 
 import org.apache.jackrabbit.core.security.principal.PrincipalProvider;
 import org.apache.jackrabbit.core.security.principal.PrincipalProviderRegistry;
@@ -33,16 +32,16 @@ import org.osgi.util.tracker.ServiceTracker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PrincipalProviderTracker extends ServiceTracker implements PrincipalProviderRegistry{
+public class PrincipalProviderTracker extends ServiceTracker implements PrincipalProviderRegistry {
     /**
-     * Property-Key if the <code>PrincipalProvider</code> configured with
-     * {@link LoginModuleConfig#PARAM_PRINCIPAL_PROVIDER_CLASS} be registered using the
-     * specified name instead of the class name which is used by default if the
-     * name parameter is missing.
+     * Property-Key if the <code>PrincipalProvider</code> configured with {@link
+     * LoginModuleConfig#PARAM_PRINCIPAL_PROVIDER_CLASS} be registered using the specified name
+     * instead of the class name which is used by default if the name parameter is missing.
      *
      * @see <a href="https://issues.apache.org/jira/browse/JCR-2629">JCR-2629</a>
      */
     private static final String COMPAT_PRINCIPAL_PROVIDER_NAME = "principal_provider.name";
+
     public static final PrincipalProvider[] EMPTY_ARRAY = new PrincipalProvider[0];
 
     private Logger log = LoggerFactory.getLogger(getClass());
@@ -55,23 +54,23 @@ public class PrincipalProviderTracker extends ServiceTracker implements Principa
         super(context, PrincipalProvider.class.getName(), null);
     }
 
-    //~-------------------------------------< ServiceTracker >
+    // ~-------------------------------------< ServiceTracker >
 
     @Override
     public Object addingService(ServiceReference reference) {
         PrincipalProvider provider = (PrincipalProvider) super.addingService(reference);
-        addProvider(provider,reference);
+        addProvider(provider, reference);
         reloadProviders();
         return provider;
     }
 
     @Override
     public void modifiedService(ServiceReference reference, Object service) {
-        //Check if the name has changed then re-register the provider
-        String newName = getProviderName((PrincipalProvider) service,reference);
+        // Check if the name has changed then re-register the provider
+        String newName = getProviderName((PrincipalProvider) service, reference);
         String oldName = refToNameMapping.get(reference);
-        if(!equals(newName,oldName)){
-            if(oldName != null){
+        if (!equals(newName, oldName)) {
+            if (oldName != null) {
                 providers.remove(oldName);
             }
             addProvider((PrincipalProvider) service, reference);
@@ -82,7 +81,7 @@ public class PrincipalProviderTracker extends ServiceTracker implements Principa
     @Override
     public void removedService(ServiceReference reference, Object service) {
         String name = refToNameMapping.remove(reference);
-        if(name != null){
+        if (name != null) {
             providers.remove(name);
         }
         reloadProviders();
@@ -96,14 +95,15 @@ public class PrincipalProviderTracker extends ServiceTracker implements Principa
         providerArray = EMPTY_ARRAY;
     }
 
-    //~-------------------------------------< PrincipalProviderRegistry >
+    // ~-------------------------------------< PrincipalProviderRegistry >
 
     public PrincipalProvider registerProvider(Properties configuration) throws RepositoryException {
         throw new UnsupportedOperationException("The PrincipalProvider are only registered as OSGi services");
     }
 
     public PrincipalProvider getDefault() {
-        throw new UnsupportedOperationException("Default provider is handled via WorkspaceBasedPrincipalProviderRegistry");
+        throw new UnsupportedOperationException(
+                "Default provider is handled via WorkspaceBasedPrincipalProviderRegistry");
     }
 
     public PrincipalProvider getProvider(String className) {
@@ -114,27 +114,29 @@ public class PrincipalProviderTracker extends ServiceTracker implements Principa
         return providerArray;
     }
 
-    private void addProvider(PrincipalProvider provider,ServiceReference reference){
-        String providerName = getProviderName(provider,reference);
-        if(providers.containsKey(providerName)){
-            log.warn("Provider with name {} is already registered. PrincipalProvider {} " +
-                    "would not be registered",providerName,reference);
+    private void addProvider(PrincipalProvider provider, ServiceReference reference) {
+        String providerName = getProviderName(provider, reference);
+        if (providers.containsKey(providerName)) {
+            log.warn(
+                    "Provider with name {} is already registered. PrincipalProvider {} " + "would not be registered",
+                    providerName,
+                    reference);
             return;
         }
-        providers.put(providerName,provider);
-        refToNameMapping.put(reference,providerName);
+        providers.put(providerName, provider);
+        refToNameMapping.put(reference, providerName);
     }
 
     private void reloadProviders() {
         PrincipalProvider[] providerArray = providers.values().toArray(new PrincipalProvider[providers.size()]);
-        synchronized (this){
+        synchronized (this) {
             this.providerArray = providerArray;
         }
     }
 
-    private static String getProviderName(PrincipalProvider provider,ServiceReference ref){
+    private static String getProviderName(PrincipalProvider provider, ServiceReference ref) {
         String providerName = (String) ref.getProperty(COMPAT_PRINCIPAL_PROVIDER_NAME);
-        if(providerName == null){
+        if (providerName == null) {
             providerName = provider.getClass().getName();
         }
         return providerName;
@@ -149,5 +151,4 @@ public class PrincipalProviderTracker extends ServiceTracker implements Principa
         }
         return object1.equals(object2);
     }
-
 }
