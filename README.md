@@ -6,4 +6,66 @@
 
 This module is part of the [Apache Sling](https://sling.apache.org) project.
 
-The JCR base bundle provides Jackrabbit utility classes
+The JCR base bundle provides Jackrabbit utility classes for integrating Jackrabbit
+security and configuration extension points with an OSGi runtime.
+
+## Key Components
+
+* `OsgiBeanFactory` (`org.apache.sling.jcr.jackrabbit.base.config`) tracks OSGi
+  services marked as Jackrabbit extensions and exposes a `BeanFactory` when all
+  required dependencies are available.
+* `DelegatingLoginModule` delegates JAAS login handling to an OSGi-based JAAS
+  configuration when available, with fallback to Jackrabbit's local module setup.
+* `PrincipalProviderTracker` and `DelegatingPrincipalProviderRegistry` bridge
+  OSGi-registered `PrincipalProvider` services into Jackrabbit's principal
+  provider registry model.
+* `MultiplexingAuthorizableAction` tracks OSGi `AuthorizableAction` services and
+  dispatches Jackrabbit authorizable lifecycle callbacks to them.
+
+## Build
+
+```bash
+mvn clean install
+```
+
+## Common Commands
+
+```bash
+# Compile only
+mvn compile
+
+# Run tests
+mvn test
+
+# Check formatting
+mvn spotless:check
+
+# Apply formatting
+mvn spotless:apply
+
+# Full verification (includes integration checks from parent build)
+mvn verify
+```
+
+## Requirements and Dependencies
+
+* Java 8 (`sling.java.version=8`)
+* Apache Jackrabbit Core `2.5.2` (provided)
+* JCR API (`javax.jcr:jcr`, provided)
+* OSGi APIs (`org.osgi.framework`, `org.osgi.util.tracker`,
+  `org.osgi.annotation.versioning`, provided)
+* SLF4J API (provided)
+* JUnit 4 and `slf4j-simple` for tests
+
+## Source Layout
+
+```text
+src/main/java/org/apache/sling/jcr/jackrabbit/base/
+  config/
+    OsgiBeanFactory.java
+  security/
+    DelegatingLoginModule.java
+    DelegatingPrincipalProviderRegistry.java
+    MultiplexingAuthorizableAction.java
+    PrincipalProviderTracker.java
+```
