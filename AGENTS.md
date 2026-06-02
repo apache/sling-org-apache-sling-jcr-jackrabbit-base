@@ -89,3 +89,10 @@ No `src/test/` directory — currently no tests.
 - **RAT check**: Missing or malformed license headers fail the build. Any new file needs the ASF license block.
 - **`bnd.baseline.fail.on.missing=false`**: OSGi semantic versioning baseline check is relaxed (no baseline artifact yet). Enable carefully when releasing.
 - **Animal Sniffer**: Importing any API added after Java 8 (e.g., `java.util.Optional.ifPresentOrElse`) will fail the build silently at the sniffer phase — check carefully when upgrading utilities.
+
+# Security
+
+<!-- sling-security-default:start -->
+The threat model for this project is https://github.com/apache/sling/blob/master/docs/threat-model.md .
+<!-- sling-security-default:end -->
+
