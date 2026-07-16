@@ -37,6 +37,9 @@ mvn compile
 # Run tests
 mvn test
 
+# Build without tests
+mvn install -DskipTests
+
 # Check formatting
 mvn spotless:check
 
@@ -45,17 +48,23 @@ mvn spotless:apply
 
 # Full verification (includes integration checks from parent build)
 mvn verify
+
+# License header compliance
+mvn apache-rat:check
 ```
 
 ## Requirements and Dependencies
 
 * Java 8 (`sling.java.version=8`)
+* Maven build parent: `org.apache.sling:sling-bundle-parent:66`
 * Apache Jackrabbit Core `2.5.2` (provided)
 * JCR API (`javax.jcr:jcr`, provided)
 * OSGi APIs (`org.osgi.framework`, `org.osgi.util.tracker`,
   `org.osgi.annotation.versioning`, provided)
 * SLF4J API (provided)
 * JUnit 4 and `slf4j-simple` for tests
+* Animal Sniffer Maven Plugin (`org.codehaus.mojo:animal-sniffer-maven-plugin:1.24`)
+  enforces Java 8 API compatibility
 
 ## Source Layout
 
@@ -68,4 +77,7 @@ src/main/java/org/apache/sling/jcr/jackrabbit/base/
     DelegatingPrincipalProviderRegistry.java
     MultiplexingAuthorizableAction.java
     PrincipalProviderTracker.java
+    package-info.java
 ```
+
+There is currently no `src/test/java/` tree in this module.
